@@ -1,4 +1,4 @@
-public class EmbeddingTransactionMain {
+public class EmbeddedTransactionMain {
     public static void main(String[] args) {
         EmbeddedTransactions.sequence();
         EmbeddedTransactions transaction1 = new EmbeddedTransactions();
