@@ -1,6 +1,6 @@
 public class EmbeddedTransactionMain {
     public static void main(String[] args) {
-        EmbeddedTransactions.sequence();
+        EmbeddedTransactions.embedQuerySequence();
         EmbeddedTransactions transaction1 = new EmbeddedTransactions();
         EmbeddedTransactions transaction2 = new EmbeddedTransactions();
 

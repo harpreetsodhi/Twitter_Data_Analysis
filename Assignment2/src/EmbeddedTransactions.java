@@ -12,15 +12,15 @@ public class EmbeddedTransactions {
     private Statement remoteStatement;
     private ResultSet localResultSet;
     private ResultSet remoteResultSet;
-    private static ArrayList<String> al;
+    private static ArrayList<String> embedQuerySequence;
 
-    public static void sequence(){
-        al = new ArrayList<>();
-        al.add("START TRANSACTION");
-        al.add("select * from olist_customers_dataset where customer_zip_code_prefix=01151;");
-        al.add("UPDATE olist_customers_dataset SET customer_city = 'T1 city' WHERE customer_zip_code_prefix=01151;");
-        al.add("UPDATE olist_customers_dataset SET customer_city = 'T2 city' WHERE customer_zip_code_prefix=01151;");
-        al.add("COMMIT");
+    public static void embedQuerySequence(){
+        embedQuerySequence = new ArrayList<>();
+        embedQuerySequence.add("START TRANSACTION");
+        embedQuerySequence.add("select * from olist_customers_dataset where customer_zip_code_prefix=01151;");
+        embedQuerySequence.add("UPDATE olist_customers_dataset SET customer_city = 'T1 city' WHERE customer_zip_code_prefix=01151;");
+        embedQuerySequence.add("UPDATE olist_customers_dataset SET customer_city = 'T2 city' WHERE customer_zip_code_prefix=01151;");
+        embedQuerySequence.add("COMMIT");
     }
 
     public void connect() {
@@ -39,7 +39,7 @@ public class EmbeddedTransactions {
 
     public void performQuery(int sequence){
         try {
-            localStatement.execute(al.get(sequence));
+            localStatement.execute(embedQuerySequence.get(sequence));
         }
         catch (Exception e){
             e.printStackTrace();
