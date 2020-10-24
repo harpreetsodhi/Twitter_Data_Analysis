@@ -16,8 +16,8 @@ public class EmbeddedTransactionMain {
         transaction1.performQuery(2);
         transaction2.performQuery(3);
 
-        transaction1.performQuery(4);
         transaction2.performQuery(4);
+        transaction1.performQuery(4);
 
         transaction1.closeConnection();
         transaction2.closeConnection();
