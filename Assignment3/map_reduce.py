@@ -1,4 +1,5 @@
 import operator
+import constants
 import pyspark
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
@@ -8,8 +9,6 @@ spark = SparkSession \
     .appName("WordCount") \
     .config("spark.driver.extraClassPath","org.mongodb.spark:mongo-spark-connector_2.11:3.0.0") \
     .getOrCreate()
-
-keywords = ["Storm", "Winter", "Canada", "hot", "cold", "Flu", "Snow", "Indoor", "Safety", "rain", "ice"]
 
 news = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("spark.mongodb.input.uri", "mongodb+srv://harpreet:B00833691@mycluster.ytdpt.mongodb.net/ReuterDb.news").load()
 
@@ -25,7 +24,7 @@ for row in news.rdd.collect():
     lines.append(line)
 
 lines = spark.sparkContext.parallelize(lines)
-words = lines.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip()).filter(lambda word: word in keywords).map(lambda word: (word,1))
+words = lines.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip().lower()).filter(lambda word: word in constants.FREQUENCY_TERMS).map(lambda word: (word,1))
 counts = words.reduceByKey(operator.add)
 print("ReuterDb:")
 print(counts.collect())
@@ -42,7 +41,7 @@ for row in stream_tweets.rdd.collect():
         lines.append(row.text)
 
 lines = spark.sparkContext.parallelize(lines)
-words = lines.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip()).filter(lambda word: word in keywords).map(lambda word: (word,1))
+words = lines.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip().lower()).filter(lambda word: word in constants.FREQUENCY_TERMS).map(lambda word: (word,1))
 counts = words.reduceByKey(operator.add)
 print("ProcessedDb:")
 print(counts.collect())
