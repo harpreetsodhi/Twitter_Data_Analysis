@@ -1,47 +1,46 @@
 import operator
-import constants
 import pyspark
+from pymongo import MongoClient
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 
-spark = SparkSession \
-    .builder \
-    .appName("WordCount") \
-    .config("spark.driver.extraClassPath","org.mongodb.spark:mongo-spark-connector_2.11:3.0.0") \
-    .getOrCreate()
+client = MongoClient("mongodb+srv://harpreet:B00833691@mycluster.ytdpt.mongodb.net/test")
+twitter_db = client.ProcessedDb
+reuter_db = client.ReuterDb
 
-news = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("spark.mongodb.input.uri", "mongodb+srv://harpreet:B00833691@mycluster.ytdpt.mongodb.net/ReuterDb.news").load()
+search_collection = twitter_db.search
+stream_collection = twitter_db.stream
+news_collection = reuter_db.news
 
-lines = []
-for row in news.rdd.collect():
+tweets = []
+for tweet in search_collection.find():
+    if tweet['text'] is not None:
+        tweets.append(tweet['text'])
+for tweet in stream_collection.find():
+    if tweet['text'] is not None:
+        tweets.append(tweet['text'])
+
+reuters = []
+for reuter in news_collection.find():
     text = ""
     title = ""
-    if row.text is not None:
-        text = row.text
-    if row.title is not None:
-        title = row.title
+    if reuter["text"] is not None:
+        text = reuter["text"]
+    if reuter["title"] is not None:
+        title = reuter["title"]
     line = text +" "+ title
-    lines.append(line)
+    reuters.append(line)
 
-lines = spark.sparkContext.parallelize(lines)
-words = lines.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip().lower()).filter(lambda word: word in constants.FREQUENCY_TERMS).map(lambda word: (word,1))
+keywords = ["storm", "winter", "canada", "hot", "cold", "flu", "snow", "indoor", "safety", "rain", "ice"]
+
+reuters = spark.sparkContext.parallelize(reuters)
+words = reuters.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip().lower()).filter(lambda word: word in keywords).map(lambda word: (word,1))
 counts = words.reduceByKey(operator.add)
 print("ReuterDb:")
 print(counts.collect())
 
-search_tweets = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("spark.mongodb.input.uri", "mongodb+srv://harpreet:B00833691@mycluster.ytdpt.mongodb.net/ProcessedDb.search").load()
-stream_tweets = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("spark.mongodb.input.uri", "mongodb+srv://harpreet:B00833691@mycluster.ytdpt.mongodb.net/ProcessedDb.stream").load()
-
-lines = []
-for row in search_tweets.rdd.collect():
-    if row.text is not None:
-        lines.append(row.text)
-for row in stream_tweets.rdd.collect():
-    if row.text is not None:
-        lines.append(row.text)
-
-lines = spark.sparkContext.parallelize(lines)
-words = lines.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip().lower()).filter(lambda word: word in constants.FREQUENCY_TERMS).map(lambda word: (word,1))
+tweets = spark.sparkContext.parallelize(tweets)
+words = tweets.flatMap(lambda line: line.split(" ")).map(lambda word: word.strip().lower()).filter(lambda word: word in keywords).map(lambda word: (word,1))
 counts = words.reduceByKey(operator.add)
 print("ProcessedDb:")
 print(counts.collect())

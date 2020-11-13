@@ -9,7 +9,3 @@ CONNECTION_STRING = "mongodb+srv://harpreet:B00833691@mycluster.ytdpt.mongodb.ne
 FREQUENCY_TERMS = ["storm", "winter", "canada", "hot", "cold", "flu", "snow", "indoor", "safety", "rain", "ice"]
 NO_OF_STREAM_TWEETS = 2000
 NO_OF_SEARCH_TWEETS = 2000
-
-data = [('Magnetics', 5), ('Storm', 24), ('Canada', 1)]
-values = filter(lambda x: x[0] in FREQUENCY_TERMS, data)
-print(list(values))
